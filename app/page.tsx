@@ -48,7 +48,7 @@ export default function Home() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/feeds");
+      const res = await fetch("/api/feeds", { cache: "no-store" });
       if (!res.ok) throw new Error(`Server error: ${res.status}`);
       const json: FeedResponse = await res.json();
       setData(json);
