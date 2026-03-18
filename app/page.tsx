@@ -23,10 +23,30 @@ interface FeedResponse {
 
 function applyTimeFilter(articles: Article[], tf: TimeFilter): Article[] {
   if (tf === "all") return articles;
-  const ms = tf === "today" ? 86400000 : 604800000;
-  return articles.filter(
-    (a) => Date.now() - new Date(a.publishedAt).getTime() <= ms
-  );
+  if (tf === "today") {
+    const today = new Date();
+    return articles.filter((a) => {
+      const d = new Date(a.publishedAt);
+      return (
+        d.getFullYear() === today.getFullYear() &&
+        d.getMonth() === today.getMonth() &&
+        d.getDate() === today.getDate()
+      );
+    });
+  }
+  // "week" — current Monday–Sunday calendar week
+  const now = new Date();
+  const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay(); // Mon=1 … Sun=7
+  const monday = new Date(now);
+  monday.setHours(0, 0, 0, 0);
+  monday.setDate(now.getDate() - (dayOfWeek - 1));
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(23, 59, 59, 999);
+  return articles.filter((a) => {
+    const d = new Date(a.publishedAt);
+    return d >= monday && d <= sunday;
+  });
 }
 
 export default function Home() {
